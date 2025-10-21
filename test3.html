@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Test de Prise de Décision Chronométré</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; line-height: 1.6; }
+    .question, .intro, .results { margin-bottom: 20px; }
+    .choices button { margin: 5px 0; display: block; width: 100%; padding: 10px; font-size: 16px; cursor: pointer; }
+    #nextBtn, #startBtn { margin-top: 20px; padding: 10px 20px; font-size: 16px; }
+  </style>
+</head>
+<body>
+
+<h2>Test de Prise de Décision Chronométré</h2>
+
+<!-- INTRODUCTION -->
+<div id="intro" class="intro">
+  <p>Bienvenue dans ce test de prise de décision rapide.</p>
+  <p>Tu verras une série de questions simples, chacune avec plusieurs choix possibles.</p>
+  <p><strong>Lis attentivement chaque question</strong> et sois prêt·e à répondre <strong>le plus vite possible</strong>.</p>
+  <p>Ton temps de réponse sera mesuré <strong>au millième de seconde</strong> pour chaque question.</p>
+  <p>Quand tu es prêt·e, clique sur le bouton ci-dessous pour commencer le test.</p>
+  <button id="startBtn">Commencer le test</button>
+</div>
+
+<!-- TEST -->
+<div id="testContainer" style="display:none;">
+  <div id="questionBox" class="question"></div>
+  <div id="choicesBox" class="choices"></div>
+  <button id="nextBtn">Question suivante</button>
+</div>
+
+<!-- RÉSULTATS -->
+<div id="results" class="results"></div>
+
+<script>
+const questions = [
+  {
+    text: "Tu préfères :",
+    choices: ["L'été", "L'hiver", "L'automne", "Le printemps"]
+  },
+  {
+    text: "Quel animal te ressemble le plus :",
+    choices: ["Chat", "Chien", "Oiseau", "Tigre"]
+  },
+  {
+    text: "Tu préfères travailler :",
+    choices: ["Le matin", "L'après-midi", "Le soir", "La nuit"]
+  },
+  {
+    text: "Si tu devais choisir une boisson :",
+    choices: ["Café", "Thé", "Jus", "Eau"]
+  },
+  {
+    text: "Quel super-pouvoir tu voudrais :",
+    choices: ["Voler", "Télépathie", "Téléportation", "Invisibilité"]
+  }
+];
+
+let currentQuestion = 0;
+let startTime = 0;
+const times = [];
+
+const intro = document.getElementById("intro");
+const startBtn = document.getElementById("startBtn");
+const testContainer = document.getElementById("testContainer");
+const questionBox = document.getElementById("questionBox");
+const choicesBox = document.getElementById("choicesBox");
+const nextBtn = document.getElementById("nextBtn");
+const resultsDiv = document.getElementById("results");
+
+startBtn.onclick = () => {
+  intro.style.display = "none";
+  testContainer.style.display = "block";
+  showQuestion();
+};
+
+function showQuestion() {
+  nextBtn.style.display = "none";
+  resultsDiv.innerHTML = "";
+  const q = questions[currentQuestion];
+  questionBox.textContent = q.text;
+  choicesBox.innerHTML = "";
+  q.choices.forEach((choice, i) => {
+    const btn = document.createElement("button");
+    btn.textContent = choice;
+    btn.onclick = () => selectChoice(i);
+    choicesBox.appendChild(btn);
+  });
+  startTime = performance.now();
+}
+
+function selectChoice(choiceIndex) {
+  const elapsed = performance.now() - startTime;
+  times.push({
+    question: currentQuestion + 1,
+    timeMs: elapsed.toFixed(3),
+    choice: questions[currentQuestion].choices[choiceIndex]
+  });
+  Array.from(choicesBox.children).forEach(btn => btn.disabled = true);
+  nextBtn.style.display = "inline-block";
+}
+
+nextBtn.onclick = () => {
+  currentQuestion++;
+  if (currentQuestion < questions.length) {
+    showQuestion();
+  } else {
+    showResults();
+  }
+};
+
+function showResults() {
+  questionBox.textContent = "Test terminé ! Voici tes résultats :";
+  choicesBox.innerHTML = "";
+  nextBtn.style.display = "none";
+  let html = "<ul>";
+  times.forEach(t => {
+    html += `<li>Question ${t.question} : ${t.choice} — Temps de décision : <strong>${t.timeMs} ms</strong></li>`;
+  });
+  html += "</ul>";
+  resultsDiv.innerHTML = html;
+}
+</script>
+
+</body>
+</html>
